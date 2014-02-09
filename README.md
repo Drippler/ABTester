@@ -1,4 +1,4 @@
-AB Tester for Amazon AB Testing
+AB Tester for Amazon AB Testing SDK
 ==============
 AB testing wrapper library for the Amazon AB Testing SDK. Adds interface improvements and new features to the existing sdk. The primamry interface improvements allow a much easier integration in existing code as it doesn't require implementation of callbacks and dealing with waiting for variation values.
 Features:
