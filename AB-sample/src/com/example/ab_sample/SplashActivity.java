@@ -2,9 +2,9 @@ package com.example.ab_sample;
 
 import java.util.concurrent.TimeoutException;
 
-import ab.test.ABTest;
-import ab.test.ABTesterSafe;
-import ab.test.DefualtLogger;
+import ab.tester.ABTest;
+import ab.tester.ABTesterSafe;
+import ab.tester.DefualtLogger;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;

@@ -1,6 +1,6 @@
 package com.example.ab_sample;
 
-import ab.test.ABTesterSafe;
+import ab.tester.ABTesterSafe;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
