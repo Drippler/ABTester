@@ -29,6 +29,7 @@ public class ABTester {
 	private static final String FIRST_TIME_READY_KEY = "FIRST_TIME_READY_KEY____";
 	private static final String SP_FILE_NAME_TESTS = "ABTester_experiments_values_tests";
 	private static final String SP_FILE_NAME_EVENTS = "ABTester_experiments_values_events";
+	private static final int ASYNC_TIMEOUT = 60000;
 	
 	private static ABTester instance = null;
 	
@@ -59,7 +60,7 @@ public class ABTester {
 		addDimensionAsNumber(RANDOM_INT, new Random().nextInt(100));
 	}
 
-	private static final int ASYNC_TIMEOUT = 60000;
+	
 	private AmazonInsights insightsInstance;
 	private Context context;
 	private LoggerInterface logger;
