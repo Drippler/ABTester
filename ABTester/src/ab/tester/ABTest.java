@@ -12,7 +12,7 @@ public class ABTest {
 	protected ABVariable[] variables;
 	protected boolean lock;
 
-	protected ABTest(String testName, boolean lockVariables, String... desiredVariables) {
+	public ABTest(String testName, boolean lockVariables, String... desiredVariables) {
 		this.lock = lockVariables;
 		this.testName = testName;
 		this.variables = new ABVariable[desiredVariables.length];
