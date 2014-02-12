@@ -1,7 +1,10 @@
 package ab.tester;
 
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 
+// we use the utils to apply
+@SuppressLint("CommitPrefEdits") 
 public class ABTest {
 
 	private static final String SEPERATOR = "___";
@@ -9,7 +12,7 @@ public class ABTest {
 	protected ABVariable[] variables;
 	protected boolean lock;
 
-	public ABTest(String testName, boolean lockVariables ,String... desiredVariables) {
+	protected ABTest(String testName, boolean lockVariables, String... desiredVariables) {
 		this.lock = lockVariables;
 		this.testName = testName;
 		this.variables = new ABVariable[desiredVariables.length];
@@ -30,45 +33,58 @@ public class ABTest {
 			// save only if not locked, or locked and yet to be set
 			if( ( lock == false ) ||
 				( lock == true && sp.contains(key)) ){
-				spe.putString(key , variables[i].value );
+				spe.putString(key , variables[i].getValue() );
 			}
 		}
 		// set it to true, so we can check that that has been downloaded
 		spe.putBoolean(testName, true);
-		spe.commit();
+		Utils.applySP(spe);
+	}
+
+	/**
+	 * Checks if the AB test is synced
+	 * @param sp
+	 * @param abTestName - the name of experiment 
+	 * @return return if the AB test is synced
+	 */
+	protected static boolean isABTestSynced(SharedPreferences sp, String abTestName){
+		return sp.getBoolean(abTestName, false);
+	}
+	
+	/**
+	 * get the variable synced previously to the SharedPreferences
+	 * fetched locally
+	 * @param sp - the SharedPreferences
+	 * @param abName - the name of the ABtest( project name)
+	 * @param variableName - the name of the variable to be fetched
+	 * @param defaultValue - the default will be returned when, the value is not synced. you can check if synced via isABTestSynced();
+	 * @return
+	 */
+	protected static String getVariable(SharedPreferences sp, String abName, String variableName, String defaultValue){
+		return sp.getString(abName + SEPERATOR + variableName, defaultValue);
 	}
 	
 	/**
 	 * used to store the data
 	 */
 	public class ABVariable {
-		protected String name,value;
-		protected ABVariable(String name){
+		private String name;
+		private String value;
+		
+		protected ABVariable(String name) {
 			this.name = name;
 		}
-	}
 
-	/**
-	 * Checks if the AB test is synced
-	 * @param sp
-	 * @param ABTestName - the name of experimetn 
-	 * @return return if the AB test is synced
-	 */
-	protected static boolean isABTestSynced(SharedPreferences sp,String ABTestName){
-		return sp.getBoolean(ABTestName, false);
+		public String getName() {
+			return name;
+		}
+		
+		public String getValue() {
+			return value;
+		}
+
+		public void setValue(String value) {
+			this.value = value;
+		}
 	}
-	
-	/**
-	 * get the variable synced previously to the SharedPreferences
-	 * fetched localy
-	 * @param sp - the SharedPreferences
-	 * @param abName - the name of the ABtest( project name)
-	 * @param variableName - the name of the varaible to be fetched
-	 * @param defaultValue - the default will be returned when, the value is not synced. you can check if synced via isABTestSynced();
-	 * @return
-	 */
-	protected static String getVariable(SharedPreferences sp,String abName,String variableName,String defaultValue){
-		return sp.getString(abName + SEPERATOR + variableName, defaultValue);
-	}
-	
 }
