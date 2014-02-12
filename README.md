@@ -16,6 +16,14 @@ Setup
 - Add this project as a library to your project
 - There are classes *ABTester* and *SafeABTester*, the safe class contains try-catch for all the method calls, an error will be logged to the instance logger
 
+progard
+--------------
+if you use progard, add those lines, other wise it won't compile (still don't know why)
+
+	keep class com.amazon.** { *; }
+	dontwarn com.amazon.**
+
+
 Code samples
 ==============
 
