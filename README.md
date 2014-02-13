@@ -1,9 +1,10 @@
 AB Tester for Amazon AB Testing SDK
 ==============
-AB testing wrapper library for the Amazon AB Testing SDK. Adds interface improvements and new features to the existing sdk. The primamry interface improvements allow a much easier integration in existing code as it doesn't require implementation of callbacks and dealing with waiting for variation values.
+AB testing wrapper library for the Amazon AB Testing SDK for Android. Adds interface improvements and new features to the existing sdk. The primamry interface improvements allow a much easier integration in existing code as it doesn't require implementation of callbacks and dealing with waiting for variation values.
 Features:
 - Pre-fetching of experiments + non blocking methods for getting the pre-fetched variable values later in the code.
 - Support for tracking of unique events and goals
+- Support for setting a default value for variables for when the API isn't available, times out, or when a test is over.
 - Sync fetching of experiments with configurable timeout and fallback to a default value
 - Ability to lock variable values so that current users won't be affected by launch configurations of winning variants
 - Ability to segment percentage of the users to each project.
@@ -11,7 +12,7 @@ Features:
 Setup
 ==============
 
-- Download the latest *AmazonInsights-android-sdk* jar to the bin folder (tested with AmazonInsights-android-sdk-2.1.16.jar)
+- Download the latest *AmazonInsights-android-sdk* jar to the bin folder (tested with AmazonInsights-android-sdk-2.1.16.jar) from https://developer.amazon.com/public/apis/manage/ab-testing
 - Import the project to eclipse
 - Add this project as a library to your project
 - There are classes *ABTester* and *SafeABTester*, the safe class contains try-catch for all the method calls, an error will be logged to the instance logger
@@ -80,11 +81,12 @@ Must be done before fetching
 	ABTesterSafe.addDimensionAsString("Name","Bob")
 	ABTesterSafe.addDimensionAsNumber("Age",20)
 	
+
 License
 ==============
 The MIT License (MIT)
 
-Copyright (c) 2014 Drippler
+Copyright (c) 2014 Drippler (http://drippler.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
