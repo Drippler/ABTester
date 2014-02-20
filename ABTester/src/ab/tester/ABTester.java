@@ -147,22 +147,17 @@ public class ABTester {
 	 */
 	public static void recordEvent(String eventName, boolean onlyOnce) {
 		ABTester tester = get();
-		if (wasReadyOnFirstRequest(eventName)) {
-			SharedPreferences sp = tester.getSharedPreferencesForEvents();
-			boolean wasReported = sp.getBoolean(EVENT_SENT_KEY + eventName, false);
-			if (onlyOnce == false || (onlyOnce == true && wasReported == false)) {
-				EventClient eventClient = tester.insightsInstance.getEventClient();
-			    eventClient.recordEvent(eventClient.createEvent(eventName));
-			    Utils.applySP(sp.edit().putBoolean(EVENT_SENT_KEY + eventName, true));
-			    if (tester.logger != null) 
-			    	tester.logger.v(TAG, "Event sent: " + eventName);
-			} else {
-				if (tester.logger != null) 
-					tester.logger.v(TAG, "Event FILTERED: " + eventName);
-			}
+		SharedPreferences sp = tester.getSharedPreferencesForEvents();
+		boolean wasReported = sp.getBoolean(EVENT_SENT_KEY + eventName, false);
+		if (onlyOnce == false || (onlyOnce == true && wasReported == false)) {
+			EventClient eventClient = tester.insightsInstance.getEventClient();
+		    eventClient.recordEvent(eventClient.createEvent(eventName));
+		    Utils.applySP(sp.edit().putBoolean(EVENT_SENT_KEY + eventName, true));
+		    if (tester.logger != null) 
+		    	tester.logger.v(TAG, "Event sent: " + eventName);
 		} else {
 			if (tester.logger != null) 
-				tester.logger.v(TAG, "Event FILTERED not part of the test: " + eventName);
+				tester.logger.v(TAG, "Event FILTERED: " + eventName);
 		}
 	}
 	
