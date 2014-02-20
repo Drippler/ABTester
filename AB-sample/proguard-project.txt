@@ -22,5 +22,5 @@
 # For amazon ab test
 -keep class com.amazon.** { *; }
 -dontwarn com.amazon.**
--keep org.apache.commons.codec.binary.** {*;}
+-keep class org.apache.commons.codec.binary.** { *; }
 -dontwarn org.apache.commons.codec.binary.**
