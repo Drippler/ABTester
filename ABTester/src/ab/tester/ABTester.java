@@ -145,9 +145,9 @@ public class ABTester {
 	 * @param eventName
 	 * @param onlyOnce - should report this once only
 	 */
-	public static void recordEvent(String testName, String eventName, boolean onlyOnce) {
+	public static void recordEvent(String eventName, boolean onlyOnce) {
 		ABTester tester = get();
-		if (wasReadyOnFirstRequest(testName)) {
+		if (wasReadyOnFirstRequest(eventName)) {
 			SharedPreferences sp = tester.getSharedPreferencesForEvents();
 			boolean wasReported = sp.getBoolean(EVENT_SENT_KEY + eventName, false);
 			if (onlyOnce == false || (onlyOnce == true && wasReported == false)) {

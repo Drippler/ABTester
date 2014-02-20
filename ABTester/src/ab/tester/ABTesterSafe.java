@@ -95,9 +95,9 @@ public class ABTesterSafe {
 	 * @param eventName
 	 * @param onlyOnce - TODO ?
 	 */
-	public static void recordEvent(String testName, String eventName, boolean onlyOnce){
+	public static void recordEvent(String eventName, boolean onlyOnce){
 		try {
-			ABTester.recordEvent(testName, eventName, onlyOnce);
+			ABTester.recordEvent(eventName, onlyOnce);
 		} catch (Throwable t){
 			if (logger != null)
 				logger.e(TAG, "ABTester - crashed", t);

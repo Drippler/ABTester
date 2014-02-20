@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
 		
 		// send event that we are part of the test, it will be send only if the data for this test is synced
 		// this event will be sent only once, several calls will do nothing
-		ABTesterSafe.recordEvent("SampleProject", "SampleProject_I_AM_IN", true);
+		ABTesterSafe.recordEvent("SampleProject_I_AM_IN", true);
 		
 		TextView title = (TextView) findViewById(R.id.title);
 		String titleT = ABTesterSafe.getString("SampleProject", "TITLE", "title_def");
@@ -27,7 +27,7 @@ public class MainActivity extends Activity {
 		btna.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				ABTesterSafe.recordEvent("SampleProject", "WANT_BTN", false);
+				ABTesterSafe.recordEvent("WANT_BTN", false);
 			}
 		});
 		
@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
 		btnb.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				ABTesterSafe.recordEvent("SampleProject", "DONT_WANT_BTN", false);
+				ABTesterSafe.recordEvent("DONT_WANT_BTN", false);
 			}
 		});
 		
