@@ -150,7 +150,7 @@ public class ABTester {
 		if (wasReadyOnFirstRequest(testName)) {
 			SharedPreferences sp = tester.getSharedPreferencesForEvents();
 			boolean wasReported = sp.getBoolean(EVENT_SENT_KEY + eventName, false);
-			if (onlyOnce == true || (onlyOnce == false && wasReported == false)) {
+			if (onlyOnce == false || (onlyOnce == true && wasReported == false)) {
 				EventClient eventClient = tester.insightsInstance.getEventClient();
 			    eventClient.recordEvent(eventClient.createEvent(eventName));
 			    Utils.applySP(sp.edit().putBoolean(EVENT_SENT_KEY + eventName, true));
