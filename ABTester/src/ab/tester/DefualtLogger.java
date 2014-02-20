@@ -27,6 +27,4 @@ public class DefualtLogger implements LoggerInterface {
 	public void v(String tag, String text) {
 		Log.v(tag, text);
 	}
-
-
 }

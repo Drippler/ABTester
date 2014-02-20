@@ -283,7 +283,7 @@ public class ABTester {
 	
 	
 	/**
-	 * This method used to determine of the user is part of the test, in other words.
+	 * This method used to determine of the user is part of the test, in other words,
 	 * if the data for the test was ready at the time this method was called, it will return the same
 	 * value forever. for instance: if the data was ready at the time, it will forever return true (since the data is always ready and saved in SP)
 	 * otherwise it will always return false, since we don't want to change the functionality of the user based on his network availability  at first run
