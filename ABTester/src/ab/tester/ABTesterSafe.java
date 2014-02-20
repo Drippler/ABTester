@@ -66,9 +66,9 @@ public class ABTesterSafe {
 	 * @param name - the name of the dimension
 	 * @param value - the dimension value as a string
 	 */
-	public static void addDimensionAsString(String name, String value){
+	public static void addDimension(String name, String value){
 		try {
-			ABTester.addDimensionAsString(name, value);
+			ABTester.addDimension(name, value);
 		} catch (Throwable t){
 			if (logger != null)
 				logger.e(TAG, "ABTester - crashed", t);
@@ -80,9 +80,9 @@ public class ABTesterSafe {
 	 * @param name - the name of the dimension
 	 * @param value - the dimension value as a Number (float,int,double...)
 	 */
-	public static void addDimensionAsNumber(String name, Number value){
+	public static void addDimension(String name, Number value){
 		try {
-			ABTester.addDimensionAsNumber(name, value);
+			ABTester.addDimension(name, value);
 		} catch (Throwable t){
 			if (logger != null)
 				logger.e(TAG, "ABTester - crashed", t);

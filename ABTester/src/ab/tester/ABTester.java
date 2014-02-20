@@ -120,7 +120,7 @@ public class ABTester {
 	 * @param name - the name of the dimension
 	 * @param value - the dimension value as a string
 	 */
-	public static void addDimensionAsString(String name, String value){
+	public static void addDimension(String name, String value){
 		ABTester tester = get();
 		tester.insightsInstance.getUserProfile().addDimensionAsString(name, value);
 		if (tester.logger != null) 
@@ -132,7 +132,7 @@ public class ABTester {
 	 * @param name - the name of the dimension
 	 * @param value - the dimension value as a Number (float,int,double...)
 	 */
-	public static void addDimensionAsNumber(String name, Number value){
+	public static void addDimension(String name, Number value){
 		ABTester tester = get();
 		tester.insightsInstance.getUserProfile().addDimensionAsNumber(name, value);
 		if (tester.logger != null) 
