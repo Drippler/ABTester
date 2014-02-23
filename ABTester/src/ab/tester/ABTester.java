@@ -224,11 +224,12 @@ public class ABTester {
 					if(isTimedout.get() == false){
 						for (int i = 0; i < tests.length; i++){
 							Variation var = vars.getVariation(tests[i].testName);
-							if (tester.logger != null) 
+							if (tester.logger != null)
 								tester.logger.v(TAG, "fetched: " + var.getProjectName());
 							
-							for (int j = 0; j < tests[i].variables.length ; j++) {
-								tests[i].variables[j].setValue(var.getVariableAsString(tests[i].variables[j].getName(), null));
+							for (int j = 0; j < tests[i].getVariables().length ; j++) {
+								String value = var.getVariableAsString(tests[i].getVariables()[j].getName(), null);
+								tests[i].getVariables()[j].setValue(value);
 							}
 							tests[i].saveTo(tester.getSharedPreferencesForTests());
 						}

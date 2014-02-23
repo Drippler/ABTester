@@ -17,7 +17,7 @@ public class ABTest {
 		this.testName = testName;
 		this.variables = new ABVariable[desiredVariables.length];
 		for (int i = 0; i < desiredVariables.length; i++)
-			variables[i] = new ABVariable(desiredVariables[i]);
+			getVariables()[i] = new ABVariable(desiredVariables[i]);
 	}
 	
 	/**
@@ -27,13 +27,12 @@ public class ABTest {
 	 */
 	protected void saveTo(SharedPreferences sp) {
 		SharedPreferences.Editor spe = sp.edit();
-		for (int i = 0; i < variables.length; i++) {
-			String key = testName + SEPERATOR + variables[i].name;
+		for (int i = 0; i < getVariables().length; i++) {
+			String key = testName + SEPERATOR + getVariables()[i].name;
 			
 			// save only if not locked, or locked and yet to be set
-			if( ( lock == false ) ||
-				( lock == true && sp.contains(key)) ){
-				spe.putString(key , variables[i].getValue() );
+			if ( (getVariables()[i].getValue() != null) && ((lock == false) || (lock == true && sp.contains(key))) ) {
+				spe.putString(key , getVariables()[i].getValue());
 			}
 		}
 		// set it to true, so we can check that that has been downloaded
@@ -64,6 +63,10 @@ public class ABTest {
 		return sp.getString(abName + SEPERATOR + variableName, defaultValue);
 	}
 	
+	public ABVariable[] getVariables() {
+		return variables;
+	}
+
 	/**
 	 * used to store the data
 	 */
