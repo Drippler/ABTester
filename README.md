@@ -15,7 +15,6 @@ Setup
 - Download the latest *AmazonInsights-android-sdk* jar to the bin folder (tested with AmazonInsights-android-sdk-2.1.16.jar) from https://developer.amazon.com/public/apis/manage/ab-testing
 - Import the project to eclipse
 - Add this project as a library to your project
-- There are classes *ABTester* and *SafeABTester*, the safe class contains try-catch for all the method calls, an error will be logged to the instance logger
 
 progard
 --------------
@@ -32,7 +31,7 @@ Initialization
 --------------
 must be called first (first Activity or Application)
 
-	ABTesterSafe.init(this, "publickey", "privatekey", new DefualtLogger());
+	ABTester.init(this, "publickey", "privatekey", new DefualtLogger());
 	
 Prefetching
 --------------
