@@ -123,7 +123,7 @@ public class ABTester {
 		ABTester tester = get();
 		tester.insightsInstance.getUserProfile().addDimensionAsString(name, value);
 		if (tester.logger != null) 
-			tester.logger.v(TAG, "adding dimmension:" + name + "value:" + value);
+			tester.logger.v(TAG, "adding dimmension: " + name + " value:" + value);
 	}
 	
 	/**
@@ -135,7 +135,7 @@ public class ABTester {
 		ABTester tester = get();
 		tester.insightsInstance.getUserProfile().addDimensionAsNumber(name, value);
 		if (tester.logger != null) 
-			tester.logger.v(TAG, "adding dimmension:" + name + "value:" + value);
+			tester.logger.v(TAG, "adding dimmension: " + name + " value:" + value);
 	}
 	
 	/**
