@@ -40,7 +40,7 @@ Fetch the test and the desired variables
 sync fetching with timeout:
 
 	try {
-		ABTesterSafe.syncPreFetch(msTimeout, new ABTest("SampleProject", false, "TITLE","RED_BTN","BLUE_BTN"));
+		ABTester.syncPreFetch(msTimeout, new ABTest("SampleProject", false, "TITLE","RED_BTN","BLUE_BTN"));
 	} catch (TimeoutException e) {
 	}
 	
@@ -48,21 +48,21 @@ If the timeout is reached before the values are fetched, the user won't be part 
 	
 async:
 
-	ABTesterSafe.preFetch( new ABTest("SampleProject", false, "TITLE","RED_BTN","BLUE_BTN") );
+	ABTester.preFetch( new ABTest("SampleProject", false, "TITLE","RED_BTN","BLUE_BTN") );
 	
 The Async method can be used in a splash screen or early in the App's launch sequence to pre fetch the tests and use it later in the code without blocking. 
 	
 Getting the value
 --------------
 
-	String s = ABTesterSafe.getString("SampleProject","WANT_BTN","want");
-	Long s = ABTesterSafe.getLong("SampleProject","SPEED",90);
+	String s = ABTester.getString("SampleProject","WANT_BTN","want");
+	Long s = ABTester.getLong("SampleProject","SPEED",90);
 	
 Events
 --------------
 Store non unique event:
 
-	ABTesterSafe.recordEvent("SampleProject","click_on_red",false);
+	ABTester.recordEvent("SampleProject","click_on_red",false);
 
 	
 Submit events:
@@ -70,15 +70,15 @@ Submit events:
 	@Override
 	protected void onPause() {
 		super.onPause();
-		ABTesterSafe.submitEvents();
+		ABTester.submitEvents();
 	}
 	
 User Dimension
 --------------
 Must be done before fetching
 
-	ABTesterSafe.addDimensionAsString("Name","Bob")
-	ABTesterSafe.addDimensionAsNumber("Age",20)
+	ABTester.addDimensionAsString("Name","Bob")
+	ABTester.addDimensionAsNumber("Age",20)
 	
 
 License
