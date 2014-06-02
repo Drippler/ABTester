@@ -1,16 +1,17 @@
 package ab.tester;
 
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ab.tester.ABTest.ABVariable;
+import ab.tester.prefs.ABEventsSharedPrefs;
+import ab.tester.prefs.ABGeneralSharedPrefs;
+import ab.tester.prefs.ABTestsSharedPrefs;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 
 import com.amazon.insights.AmazonInsights;
 import com.amazon.insights.EventClient;
@@ -22,24 +23,20 @@ import com.amazon.insights.VariationSet;
 import com.amazon.insights.error.InsightsError;
 
 public class ABTester {
-
 	// used for running multiple segments
-	private static final String RANDOM_INT = "RANDOM_INT";
 	private static final String TAG = "ABTester";
-	private static final String EVENT_SENT_KEY = "EVENT_SENT___";
-	private static final String FIRST_TIME_READY_KEY = "FIRST_TIME_READY_KEY____";
-	private static final String SP_FILE_NAME_TESTS = "ABTester_experiments_values_tests";
-	private static final String SP_FILE_NAME_EVENTS = "ABTester_experiments_values_events";
 	private static final long ASYNC_TIMEOUT = TimeUnit.SECONDS.toMillis(60);
 	
 	private AmazonInsights insightsInstance;
-	private Context context;
 	private LoggerInterface logger;
+	private ABTestsSharedPrefs testsPrefs;
+	private ABGeneralSharedPrefs generalPrefs;
+	private ABEventsSharedPrefs eventsPrefs;
 	
 	private static ABTester instance = null;
 	
 	private static ABTester get(){
-		if(instance != null){
+		if (instance != null){
 			return instance;
 		} else {
 			initWasNotCalled();
@@ -51,6 +48,10 @@ public class ABTester {
 		throw new RuntimeException("You must call ABTester.init(); before using the wrapper");
 	}
 	
+	public static EventClient getEventClient(){
+		return get().insightsInstance.getEventClient();
+	}
+	
 	/**
 	 * Must be called before usage of any other methods
 	 * @param ctx 
@@ -58,8 +59,9 @@ public class ABTester {
 	 * @param privateKey - provided by amazon
 	 * @param logger - implementation of the loggerInterface, will be used to log things
 	 */
-	public static void init(Context ctx, String publicKey, String privateKey, LoggerInterface logger){
-		instance = new ABTester(ctx.getApplicationContext(), publicKey, privateKey, logger);
+	public synchronized static void init(Context ctx, String publicKey, String privateKey, LoggerInterface logger){
+		if (instance == null)
+			instance = new ABTester(ctx.getApplicationContext(), publicKey, privateKey, logger);
 	}
 
 	/**
@@ -84,7 +86,11 @@ public class ABTester {
 	}
 	
 	private ABTester(Context ctx, String publicKey, String privateKey, LoggerInterface logger) {
-		this.context = ctx;
+		ctx = ctx.getApplicationContext();
+		this.testsPrefs = new ABTestsSharedPrefs(ctx);
+		this.generalPrefs = new ABGeneralSharedPrefs(ctx);
+		this.eventsPrefs = new ABEventsSharedPrefs(ctx);
+		
 		// Create a credentials object using the values from the
 		// Amazon Mobile App Distribution Portal A/B Testing site.
 		InsightsCredentials credentials = AmazonInsights.newCredentials(publicKey, privateKey);
@@ -102,17 +108,10 @@ public class ABTester {
 		
 		setupRandomIntDimension();
 	}
-
+	
 	private void setupRandomIntDimension() {
-		int random;
-		SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-		if(sp.contains(RANDOM_INT)) // use old random number
-			random = sp.getInt(RANDOM_INT, 0);
-		else {
-			random = new Random().nextInt(100);
-			Utils.applySP(sp.edit().putInt(RANDOM_INT, random)); // first time, save it
-		}
-		insightsInstance.getUserProfile().addDimensionAsNumber(RANDOM_INT, random);
+		int percentile = generalPrefs.getPercentile();
+		insightsInstance.getUserProfile().addDimensionAsNumber(ABGeneralSharedPrefs.PERCENTILE, percentile);
 	}
 	
 	/**
@@ -147,12 +146,12 @@ public class ABTester {
 	 */
 	public static void recordEvent(String eventName, boolean onlyOnce) {
 		ABTester tester = get();
-		SharedPreferences sp = tester.getSharedPreferencesForEvents();
-		boolean wasReported = sp.getBoolean(EVENT_SENT_KEY + eventName, false);
+		ABEventsSharedPrefs prefs = tester.eventsPrefs;
+		boolean wasReported = prefs.wasEventReported(eventName);
 		if (onlyOnce == false || (onlyOnce == true && wasReported == false)) {
 			EventClient eventClient = tester.insightsInstance.getEventClient();
 		    eventClient.recordEvent(eventClient.createEvent(eventName));
-		    Utils.applySP(sp.edit().putBoolean(EVENT_SENT_KEY + eventName, true));
+		    prefs.reportEvent(eventName);
 		    if (tester.logger != null) 
 		    	tester.logger.v(TAG, "Event sent: " + eventName);
 		} else {
@@ -170,24 +169,31 @@ public class ABTester {
 		eventClient.submitEvents();
 	}
 
+
+	/**
+	 * ASync preFetching of the experiments. running in a background thread.
+	 */
+	public static void preFetch(final ABTest... tests) {
+		preFetch(ASYNC_TIMEOUT, tests);
+	}
 	
 	/**
 	 * ASync preFetching of the experiments. running in a background thread.
-	 * @param tests
 	 */
-	public static void preFetch(final ABTest... tests){
+	public static void preFetch(final long timeout, final ABTest... tests) {
 		ABTester tester = get();
-		if(tester.logger != null) 
+		if (tester.logger != null) 
 			tester.logger.v(TAG, "prefetching async...");
 		
 		ExecutorService ex = Executors.newSingleThreadExecutor();
 		ex.execute(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					syncPreFetch(ASYNC_TIMEOUT, tests);
-				} catch (Exception e){
-				}
+					try {
+						syncPreFetch(timeout, tests);
+					} catch (TimeoutException e) {
+						// async fetching will not throw an exception on failure
+					}
 			}
 		});
 		ex.shutdown();
@@ -206,32 +212,37 @@ public class ABTester {
 		String[] testsToFetch = new String[tests.length];
 		
 		for (int i = 0; i < tests.length; i++)
-			testsToFetch[i] = tests[i].testName;
+			testsToFetch[i] = tests[i].getName();
 
 		long begin = SystemClock.uptimeMillis();
 		
+		final Object lock = new Object();
 		final AtomicBoolean isReady = new AtomicBoolean(false); 
 		final AtomicBoolean isTimedout = new AtomicBoolean(false);
 		final Thread waitingThread = Thread.currentThread();
 		
-		if(tester.logger != null) 
+		if (tester.logger != null) 
 			tester.logger.v(TAG, "fetching...");
 		
 		tester.insightsInstance.getABTestClient().getVariations(testsToFetch).setCallback(new InsightsCallback<VariationSet>() {
+			
 			@Override
 			public void onComplete(VariationSet vars) {
-				synchronized (isReady) {
-					if(isTimedout.get() == false){
+				synchronized (lock) {
+					if (isTimedout.get() == false) {
+						ABTestsSharedPrefs prefs = tester.testsPrefs;
 						for (int i = 0; i < tests.length; i++){
-							Variation var = vars.getVariation(tests[i].testName);
+							Variation var = vars.getVariation(tests[i].getName());
 							if (tester.logger != null)
 								tester.logger.v(TAG, "fetched: " + var.getProjectName());
 							
-							for (int j = 0; j < tests[i].getVariables().length ; j++) {
-								String value = var.getVariableAsString(tests[i].getVariables()[j].getName(), null);
-								tests[i].getVariables()[j].setValue(value);
+							ABVariable[] variables = tests[i].getVariables();
+							int length = variables.length;
+							for (int j = 0; j < length ; j++) {
+								String value = var.getVariableAsString(variables[j].getName(), null);
+								variables[j].setValue(value);
 							}
-							tests[i].saveTo(tester.getSharedPreferencesForTests());
+							prefs.save(tests[i]);
 						}
 						isReady.set(true);
 						waitingThread.interrupt();
@@ -254,7 +265,7 @@ public class ABTester {
 			} catch (InterruptedException e) {}
 			
 			if (SystemClock.uptimeMillis() - begin > msTimeout) {
-				synchronized (isReady) {
+				synchronized (lock) {
 					// don't throw exception unless we won't save the data
 					if(isReady.get() == false) {
 						if (tester.logger != null)
@@ -269,56 +280,27 @@ public class ABTester {
 	}
 	
 	/**
-	 * Will return true in case the test data (variables) has been fetched
-	 * @param testName the name of the test will be checked
-	 * @return true if the data is fetched and ready
-	 */
-	public static boolean isTestReady(String testName) {
-		return ABTest.isABTestSynced(get().getSharedPreferencesForTests(), testName);
-	}
-	
-	
-	/**
-	 * This method used to determine of the user is part of the test, in other words,
+	 * This method used to determine if the user is part of the test, in other words,
 	 * if the data for the test was ready at the time this method was called, it will return the same
 	 * value forever. for instance: if the data was ready at the time, it will forever return true (since the data is always ready and saved in SP)
 	 * otherwise it will always return false, since we don't want to change the functionality of the user based on his network availability  at first run
 	 * @param testName - the name of the test
 	 * @return - true or false (see above)
 	 */
-	protected static boolean wasReadyOnFirstRequest(String testName){
-		boolean result;
+	protected static boolean wasReadyAtFirstRequest(String testName) {
 		ABTester tester = get();
-		SharedPreferences sp = tester.getSharedPreferencesForTests();
-		if (sp.contains(getWasReadySpKey(testName))) {
-			boolean wasReady = tester.getSharedPreferencesForTests().getBoolean(getWasReadySpKey(testName), false);
-			if(wasReady) {
-				result = true;
+		ABTestsSharedPrefs prefs = tester.testsPrefs;
+		boolean wasReady = prefs.wasReadyAtFirstRequest(testName);
+		if (tester.logger != null) {
+			if (wasReady) {
+				tester.logger.v(TAG, "test is ready at first request");
 			} else {
-				if (tester.logger != null) 
-					tester.logger.v(TAG, "Test was NOT ready at first request, user will never be part of the test: " + testName);
-				result = false;
-			}
-		} else {
-			if (isTestReady(testName)) {
-				if (tester.logger != null) 
-					tester.logger.v(TAG, "test is ready at first request");
-				Utils.applySP(sp.edit().putBoolean(getWasReadySpKey(testName), true));
-				result = true;
-			} else {
-				if (tester.logger != null) 
-					tester.logger.v(TAG, "test is not ready at first request");
-				Utils.applySP(sp.edit().putBoolean(getWasReadySpKey(testName), false));
-				result = false;
+				tester.logger.v(TAG, "test is not ready at first request");
 			}
 		}
-		return result;
+		return wasReady;
 	}
 
-	private static String getWasReadySpKey(String testName) {
-		return FIRST_TIME_READY_KEY + testName;
-	}
-	
 	/**
 	 * Return the String for the requested variable in the specified test
 	 * @param testName - the name of the test (project name)
@@ -329,10 +311,11 @@ public class ABTester {
 	public static String getString(String testName, String variable, String defaultValue) {
 		String result;
 		ABTester tester = get();
-		if(wasReadyOnFirstRequest(testName)) {
+		if (wasReadyAtFirstRequest(testName)) {
 			if (tester.logger != null) 
 				tester.logger.v(TAG, "Returning variable variation for: " + testName);
-			result = ABTest.getVariable(get().getSharedPreferencesForTests(), testName, variable, defaultValue);
+			ABTestsSharedPrefs prefs = tester.testsPrefs;
+			result = prefs.getVariable(testName, variable, defaultValue);
 		} else {
 			if (tester.logger != null) 
 				tester.logger.v(TAG, "Returning default variable value for: " + testName);
@@ -346,7 +329,7 @@ public class ABTester {
 	 * @param testName - the name of the test (project name)
 	 * @param variable - the name of the variable you want to receive
 	 * @param defaultValue - in the user should not be part of the test, this will return this value
-	 * @return the value of the variable as Boolean
+	 * @return the value of the variable as boolean
 	 */
 	public static boolean getBoolean(String testName, String variable, boolean defaultValue) {
 		return Boolean.parseBoolean(getString(testName, variable, Boolean.toString(defaultValue)));
@@ -357,7 +340,7 @@ public class ABTester {
 	 * @param testName - the name of the test (project name)
 	 * @param variable - the name of the  variable you want to receive
 	 * @param defaultValue - in the user should not be part of the test, this will return this value
-	 * @return the value of the variable as Long
+	 * @return the value of the variable as long
 	 */
 	public static long getLong(String testName, String variable, long defaultValue) {
 		return Long.parseLong(getString(testName, variable, Long.toString(defaultValue)));
@@ -366,23 +349,22 @@ public class ABTester {
 	/**
 	 * Same as getString with casting, will throw casting exception
 	 * @param testName - the name of the test (project name)
+	 * @param variable - the name of the  variable you want to receive
+	 * @param defaultValue - in the user should not be part of the test, this will return this value
+	 * @return the value of the variable as int
+	 */
+	public static int getInt(String testName, String variable, long defaultValue) {
+		return Integer.parseInt(getString(testName, variable, Long.toString(defaultValue)));
+	}
+	
+	/**
+	 * Same as getString with casting, will throw casting exception
+	 * @param testName - the name of the test (project name)
 	 * @param variable - the name of the variable you want to receive
 	 * @param defaultValue - in the user should not be part of the test, this will return this value
-	 * @return the value of the variable as Float
+	 * @return the value of the variable as float
 	 */
 	public static float getFloat(String testName,String variable, float defaultValue) {
 		return Float.parseFloat(getString(testName, variable, Float.toString(defaultValue)));
 	}
-	
-	/**
-	 * @return SharedPreferences used by this wrapper
-	 */
-	private SharedPreferences getSharedPreferencesForTests(){
-		return context.getSharedPreferences(SP_FILE_NAME_TESTS, Context.MODE_PRIVATE);
-	}
-	
-	private SharedPreferences getSharedPreferencesForEvents(){
-		return context.getSharedPreferences(SP_FILE_NAME_EVENTS, Context.MODE_PRIVATE);
-	}
-	
 }

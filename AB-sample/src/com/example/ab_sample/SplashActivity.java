@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import ab.tester.ABTest;
-import ab.tester.ABTesterSafe;
+import ab.tester.ABTester;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +19,7 @@ public class SplashActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_splash);
-		ABTesterSafe.init(this, "public", "private");
+		ABTester.init(this, "public", "private");
 		
 		ExecutorService ex = Executors.newSingleThreadExecutor();
 		ex.execute(new Runnable() {
@@ -30,7 +30,7 @@ public class SplashActivity extends Activity {
 				try {
 					// We will pull the vars TITLE, WANT_BTN and DONT_WANT_BTN with lock set to FALSE - thats mean that those vars can be modified 
 					// from the exp dashboard
-					ABTesterSafe.syncPreFetch(msTimeout, new ABTest("SampleProject", false, "TITLE", "WANT_BTN", "DONT_WANT_BTN"));
+					ABTester.syncPreFetch(msTimeout, new ABTest("SampleProject", false, "TITLE", "WANT_BTN", "DONT_WANT_BTN"));
 					Log.v("ABTesterSample", "synced within " + (SystemClock.uptimeMillis() - start) + "ms");
 				} catch (TimeoutException e) {
 					Log.v("ABTesterSample", "timed out with " + msTimeout);
@@ -46,6 +46,6 @@ public class SplashActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		ABTesterSafe.submitEvents();
+		ABTester.submitEvents();
 	}
 }

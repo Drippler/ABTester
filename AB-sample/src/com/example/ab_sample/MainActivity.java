@@ -1,6 +1,6 @@
 package com.example.ab_sample;
 
-import ab.tester.ABTesterSafe;
+import ab.tester.ABTester;
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
@@ -17,17 +17,17 @@ public class MainActivity extends Activity {
 		
 		// send event that we are part of the test, it will be send only if the data for this test is synced
 		// this event will be sent only once, several calls will do nothing
-		ABTesterSafe.recordEvent("SampleProject_I_AM_IN", true);
+		ABTester.recordEvent("SampleProject_I_AM_IN", true);
 		
 		TextView title = (TextView) findViewById(R.id.title);
-		String titleT = ABTesterSafe.getString("SampleProject", "TITLE", "title_def");
+		String titleT = ABTester.getString("SampleProject", "TITLE", "title_def");
 		title.setText(titleT);
 		
 		Button btna = (Button) findViewById(R.id.btn_a);
 		btna.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				ABTesterSafe.recordEvent("WANT_BTN", false);
+				ABTester.recordEvent("WANT_BTN", false);
 			}
 		});
 		
@@ -35,13 +35,13 @@ public class MainActivity extends Activity {
 		btnb.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				ABTesterSafe.recordEvent("DONT_WANT_BTN", false);
+				ABTester.recordEvent("DONT_WANT_BTN", false);
 			}
 		});
 		
-		String texta = ABTesterSafe.getString("SampleProject", "WANT_BTN", "btn_a_def");
+		String texta = ABTester.getString("SampleProject", "WANT_BTN", "btn_a_def");
 		btna.setText(texta);
-		String textb = ABTesterSafe.getString("SampleProject", "DONT_WANT_BTN", "btn_b_def");
+		String textb = ABTester.getString("SampleProject", "DONT_WANT_BTN", "btn_b_def");
 		btnb.setText(textb);
 	}
 	
@@ -49,6 +49,6 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		ABTesterSafe.submitEvents();
+		ABTester.submitEvents();
 	}
 }
