@@ -1,5 +1,7 @@
 AB Tester for Amazon AB Testing SDK
 ==============
+*DroidCon 2014 presentation:* http://www.slideshare.net/NirHartmann/dripplers-ab-test-library
+
 AB testing wrapper library for the Amazon AB Testing SDK for Android. Adds interface improvements and new features to the existing sdk. The primamry interface improvements allow a much easier integration in existing code as it doesn't require implementation of callbacks and dealing with waiting for variation values.
 Features:
 - Pre-fetching of experiments + non blocking methods for getting the pre-fetched variable values later in the code.
