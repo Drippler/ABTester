@@ -1,4 +1,4 @@
-AB Tester for Amazon AB Testing SDK
+**DEPRECATED - This service is no longer available** AB Tester for Amazon AB Testing SDK
 ==============
 *DroidCon 2014 presentation:* http://www.slideshare.net/NirHartmann/dripplers-ab-test-library
 
